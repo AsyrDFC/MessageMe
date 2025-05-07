@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simple Messaging App</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    .container {
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      padding: 20px;
+    }
+    .messages {
+      height: 400px;
+      overflow-y: auto;
+      border: 1px solid #e0e0e0;
+      border-radius: 5px;
+      padding: 10px;
+      margin-bottom: 15px;
+      background-color: #f9f9f9;
+    }
+    .message {
+      margin-bottom: 10px;
+      padding: 8px 12px;
+      border-radius: 18px;
+      max-width: 70%;
+      word-wrap: break-word;
+    }
+    .sent {
+      background-color: #dcf8c6;
+      align-self: flex-end;
+      margin-left: auto;
+    }
+    .received {
+      background-color: #ececec;
+    }
+    .timestamp {
+      font-size: 0.7em;
+      color: #888;
+      margin-top: 4px;
+    }
+    .input-area {
+      display: flex;
+      gap: 10px;
+    }
+    #message-input {
+      flex-grow: 1;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 20px;
+    }
+    button {
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    .nickname-container {
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Simple Messaging App</h1>
+    
+    <div class="nickname-container">
+      <label for="nickname">Your Nickname:</label>
+      <input type="text" id="nickname" placeholder="Enter your nickname">
+      <button id="save-nickname">Save</button>
+    </div>
+    
+    <div class="messages" id="message-container"></div>
+    
+    <div class="input-area">
+      <input type="text" id="message-input" placeholder="Type a message...">
+      <button id="send-button">Send</button>
+    </div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-app-compat.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-database-compat.min.js"></script>
+
+  <script>
+    // Firebase configuration - You'll need to replace these with your own Firebase config
+    const firebaseConfig = {
+  
+    apiKey: "AIzaSyDoeLDReZuG6ZY4yHYNsFGRPRMu_l15Ufk",
+  
+    authDomain: "simple-web-messenger.firebaseapp.com",
+  
+    projectId: "simple-web-messenger",
+  
+    storageBucket: "simple-web-messenger.firebasestorage.app",
+  
+    messagingSenderId: "138893692990",
+  
+    appId: "1:138893692990:web:fcb1f98ffa1c53a0aa016f",
+    
+    databaseURL: "https://simple-web-messenger-default-rtdb.firebaseio.com"
+  
+  };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+    const messagesRef = database.ref('messages');
+    
+    // DOM elements
+    const messageContainer = document.getElementById('message-container');
+    const messageInput = document.getElementById('message-input');
+    const sendButton = document.getElementById('send-button');
+    const nicknameInput = document.getElementById('nickname');
+    const saveNicknameButton = document.getElementById('save-nickname');
+    
+    // Get nickname from local storage if available
+    let nickname = localStorage.getItem('nickname') || '';
+    if (nickname) {
+      nicknameInput.value = nickname;
+    }
+    
+    // Save nickname
+    saveNicknameButton.addEventListener('click', () => {
+      nickname = nicknameInput.value.trim();
+      if (nickname) {
+        localStorage.setItem('nickname', nickname);
+        alert('Nickname saved!');
+      } else {
+        alert('Please enter a valid nickname.');
+      }
+    });
+    
+    // Send message function
+    function sendMessage() {
+      const messageText = messageInput.value.trim();
+      if (messageText && nickname) {
+        const newMessage = {
+          text: messageText,
+          sender: nickname,
+          timestamp: Date.now()
+        };
+        
+        messagesRef.push(newMessage);
+        messageInput.value = '';
+      } else if (!nickname) {
+        alert('Please set your nickname first.');
+      }
+    }
+    
+    // Send message on button click
+    sendButton.addEventListener('click', sendMessage);
+    
+    // Send message on Enter key
+    messageInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        sendMessage();
+      }
+    });
+    
+    // Listen for messages
+    messagesRef.on('child_added', (snapshot) => {
+      const message = snapshot.val();
+      displayMessage(message, snapshot.key);
+    });
+    
+    // Display message in the UI
+    function displayMessage(message, key) {
+      const messageElement = document.createElement('div');
+      const isCurrentUser = message.sender === nickname;
+      
+      messageElement.className = `message ${isCurrentUser ? 'sent' : 'received'}`;
+      messageElement.id = key;
+      
+      const timestampDate = new Date(message.timestamp);
+      const formattedTime = timestampDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      
+      messageElement.innerHTML = `
+        <div><strong>${message.sender}</strong>: ${message.text}</div>
+        <div class="timestamp">${formattedTime}</div>
+      `;
+      
+      messageContainer.appendChild(messageElement);
+      messageContainer.scrollTop = messageContainer.scrollHeight;
+    }
+  </script>
+</body>
+</html>

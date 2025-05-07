@@ -5,27 +5,38 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Simple Messaging App</title>
   <style>
+    h1 {
+      text-align: center;
+      color: #af8807;
+    }
+    label {
+      text-align: center;
+      color: #ffffff;
+    }
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       max-width: 800px;
       margin: 0 auto;
       padding: 20px;
-      background-color: #f5f5f5;
+      background-color: #181425;
     }
     .container {
-      background-color: white;
+      border: 5px solid #af8807;
+      background-color: rgb(32, 35, 70);
       border-radius: 10px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
       padding: 20px;
+      margin: auto;
     }
     .messages {
-      height: 400px;
+      height: 100%;
+      width: 100%;
       overflow-y: auto;
       border: 1px solid #e0e0e0;
       border-radius: 5px;
       padding: 10px;
       margin-bottom: 15px;
-      background-color: #f9f9f9;
+      background-color: #444b68;
     }
     .message {
       margin-bottom: 10px;
@@ -40,11 +51,11 @@
       margin-left: auto;
     }
     .received {
-      background-color: #ececec;
+      background-color: #5a6c8f;
     }
     .timestamp {
       font-size: 0.7em;
-      color: #888;
+      color: #ffffff;
       margin-top: 4px;
     }
     .input-area {
@@ -54,7 +65,7 @@
     #message-input {
       flex-grow: 1;
       padding: 10px;
-      border: 1px solid #ddd;
+      border: 1px solid #ddd; 
       border-radius: 20px;
     }
     button {
@@ -69,6 +80,9 @@
       background-color: #45a049;
     }
     .nickname-container {
+      margin: auto;
+      width: 50%;
+      border-radius: 10px;
       margin-bottom: 20px;
     }
   </style>
@@ -114,8 +128,6 @@
     databaseURL: "https://simple-web-messenger-default-rtdb.firebaseio.com"
   
   };
-
-    //testing 
     
     // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
@@ -128,6 +140,8 @@
     const sendButton = document.getElementById('send-button');
     const nicknameInput = document.getElementById('nickname');
     const saveNicknameButton = document.getElementById('save-nickname');
+    var messageSendAudio = new Audio('https://github.com/AsyrDFC/MessageMe/blob/main/message_sent.mp3?raw=true');
+    var messageReceiveAudio = new Audio('https://github.com/AsyrDFC/MessageMe/blob/main/message_received.mp3?raw=true');
     
     // Get nickname from local storage if available
     let nickname = localStorage.getItem('nickname') || '';
@@ -153,7 +167,7 @@
         const newMessage = {
           text: messageText,
           sender: nickname,
-          timestamp: Date.now()
+          timestamp: Date.now(),
         };
         
         messagesRef.push(newMessage);
@@ -170,6 +184,7 @@
     messageInput.addEventListener('keypress', (e) => {
       if (e.key === 'Enter') {
         sendMessage();
+        messageSendAudio.play();
       }
     });
     
@@ -177,6 +192,9 @@
     messagesRef.on('child_added', (snapshot) => {
       const message = snapshot.val();
       displayMessage(message, snapshot.key);
+      if (message.sender !== nickname) {
+        messageReceiveAudio.play();
+      }
     });
     
     // Display message in the UI

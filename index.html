@@ -8,6 +8,8 @@
     h1 {
       text-align: center;
       color: #af8807;
+      margin-top: 0;
+      padding-top: 15px;
     }
     label {
       text-align: center;
@@ -19,6 +21,9 @@
       margin: 0 auto;
       padding: 20px;
       background-color: #181425;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
     .container {
       border: 5px solid #af8807;
@@ -27,16 +32,22 @@
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
       padding: 20px;
       margin: auto;
+      display: flex;
+      flex-direction: column;
+      height: 90vh;
+      width: 90%;
     }
     .messages {
       height: 100%;
-      width: 100%;
       overflow-y: auto;
       border: 1px solid #e0e0e0;
       border-radius: 5px;
       padding: 10px;
       margin-bottom: 15px;
       background-color: #444b68;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
     }
     .message {
       margin-bottom: 10px;
@@ -47,11 +58,12 @@
     }
     .sent {
       background-color: #868cc4;
-      align-self: normal;
+      align-self: flex-end;
       margin-left: auto;
     }
     .received {
       background-color: #5a6c8f;
+      align-self: flex-start;
     }
     .timestamp {
       font-size: 0.7em;
@@ -61,6 +73,8 @@
     .input-area {
       display: flex;
       gap: 10px;
+      margin-top: auto;
+      padding: 10px 0;
     }
     #message-input {
       flex-grow: 1;
@@ -81,9 +95,16 @@
     }
     .nickname-container {
       margin: auto;
-      width: 50%;
+      width: 100%;
       border-radius: 10px;
       margin-bottom: 20px;
+      text-align: center;
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
     }
   </style>
 </head>
@@ -112,22 +133,14 @@
   <script>
     // Firebase configuration - You'll need to replace these with your own Firebase config
     const firebaseConfig = {
-  
-    apiKey: "AIzaSyDoeLDReZuG6ZY4yHYNsFGRPRMu_l15Ufk",
-  
-    authDomain: "simple-web-messenger.firebaseapp.com",
-  
-    projectId: "simple-web-messenger",
-  
-    storageBucket: "simple-web-messenger.firebasestorage.app",
-  
-    messagingSenderId: "138893692990",
-  
-    appId: "1:138893692990:web:fcb1f98ffa1c53a0aa016f",
-    
-    databaseURL: "https://simple-web-messenger-default-rtdb.firebaseio.com"
-  
-  };
+      apiKey: "AIzaSyDoeLDReZuG6ZY4yHYNsFGRPRMu_l15Ufk",
+      authDomain: "simple-web-messenger.firebaseapp.com",
+      projectId: "simple-web-messenger",
+      storageBucket: "simple-web-messenger.firebasestorage.app",
+      messagingSenderId: "138893692990",
+      appId: "1:138893692990:web:fcb1f98ffa1c53a0aa016f",
+      databaseURL: "https://simple-web-messenger-default-rtdb.firebaseio.com"
+    };
     
     // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
@@ -140,6 +153,8 @@
     const sendButton = document.getElementById('send-button');
     const nicknameInput = document.getElementById('nickname');
     const saveNicknameButton = document.getElementById('save-nickname');
+
+    //audio
     var messageSendAudio = new Audio('https://github.com/AsyrDFC/MessageMe/blob/main/message_sent.mp3?raw=true');
     var messageReceiveAudio = new Audio('https://github.com/AsyrDFC/MessageMe/blob/main/message_received.mp3?raw=true');
     
@@ -172,6 +187,7 @@
         
         messagesRef.push(newMessage);
         messageInput.value = '';
+        messageSendAudio.play();
       } else if (!nickname) {
         alert('Please set your nickname first.');
       }
@@ -184,7 +200,6 @@
     messageInput.addEventListener('keypress', (e) => {
       if (e.key === 'Enter') {
         sendMessage();
-        messageSendAudio.play();
       }
     });
     
